@@ -20,7 +20,6 @@ def test_skip_module(pytester: Pytester):
         """
 def test_1():
     pass
-    # from js import document
     """
     )
 
