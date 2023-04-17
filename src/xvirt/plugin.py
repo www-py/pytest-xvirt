@@ -4,13 +4,13 @@ import pytest
 
 
 def pytest_addoption(parser):
-    group = parser.getgroup('cookie-1')
+    group = parser.getgroup('xvirt')
     group.addoption(
         '--xvirt-package',
         action='store',
         dest='xvirt_package',
         default='',
-        help='todo'
+        # help='todo'
     )
 
     parser.addini('HELLO', 'Dummy pytest.ini setting')
