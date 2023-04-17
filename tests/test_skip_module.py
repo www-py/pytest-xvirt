@@ -10,7 +10,7 @@ def test_1():
     """
     )
 
-    pytester.runpytest('--xvirt-package', 'foo').assert_outcomes(passed=0)
+    pytester.runpytest('--xvirt-folder', str(remote)).assert_outcomes(passed=0)
 
 
 def test_skip_module__should_skip_submodule(pytester: Pytester):
@@ -19,13 +19,15 @@ def test_skip_module__should_skip_submodule(pytester: Pytester):
         """
 def test_1():
     pass
+def test_2():
+    pass
     """
     )
     sub = pytester.mkpydir('foo/sub')
     (sub / 'sub_test.py').write_text(
         """
 def test_1():
-    pass
+    from js import document
         """
     )
-    pytester.runpytest('--xvirt-package', 'foo.sub').assert_outcomes(passed=1)
+    pytester.runpytest('--xvirt-folder', str(sub)).assert_outcomes(passed=2)
