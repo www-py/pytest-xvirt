@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 import json
 from dataclasses import dataclass
-from typing import List
+from typing import List, Any, Dict
 
 
 def _class_fullname(c):
@@ -34,6 +34,11 @@ class Evt:
 @dataclass()
 class EvtCollectionFinish(Evt):
     node_ids: List[str]
+
+
+@dataclass()
+class EvtRuntestLogreport(Evt):
+    data: Dict[str, Any]
 
 
 _evt_constructor_dict = {}
