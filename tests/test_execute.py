@@ -1,7 +1,8 @@
 from pytest import Pytester
 
 
-# todo parte server
+# todo raccogliere dei event.node_ids di alcuni test (magari nidificati, non piatti)
+# todo e trovare un modo di metterli nella pytest_collect_file per ricreare la struttura ad albero
 def test_transport(pytester: Pytester) -> None:
     pytester.makeconftest(
         f"""
@@ -32,3 +33,4 @@ def test_transport(pytester: Pytester) -> None:
     res.stdout.fnmatch_lines_random(["*HOOK: test_a"])
     res.stdout.fnmatch_lines_random(["*HOOK: test_b"])
     res.stdout.fnmatch_lines_random(["*HOOK: test_c"])
+

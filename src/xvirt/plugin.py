@@ -23,6 +23,14 @@ def pytest_pycollect_makemodule(module_path, path, parent):
     return None
 
 
+def pytest_collect_file(file_path: Path, path, parent):
+    pass
+
+
+def pytest_pycollect_makeitem(collector, name, obj):
+    pass
+
+
 @pytest.hookimpl
 def pytest_addhooks(pluginmanager):
     from xvirt import newhooks
@@ -52,6 +60,8 @@ def pytest_runtest_logreport(report):
     config = session.config
     del report.session
     data = config.hook.pytest_report_to_serializable(config=config, report=report)
+    import json
+    data_json = json.dumps(data)
     from .events import EvtRuntestLogreport
     event = EvtRuntestLogreport(data)
     session.config.hook.pytest_xvirt_notify(event=event, session=session)
