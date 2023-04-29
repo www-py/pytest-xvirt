@@ -14,8 +14,8 @@ def read(fname):
 setup(
     name='pytest-xvirt',
     version='0.1.0',
-    author='Simone Giacomelli',
-    author_email='simone.giacomelli@gmail.com',
+    author='Simone Giacomelli, Fabrizio Lamarca',
+    author_email='simone.giacomelli@gmail.com, lamarca.fabrizio@gmail.com',
     maintainer='Simone Giacomelli',
     maintainer_email='simone.giacomelli@gmail.com',
     license='MIT',
