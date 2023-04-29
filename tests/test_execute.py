@@ -12,6 +12,8 @@ def test_transport(pytester: Pytester) -> None:
             if isinstance(event, EvtCollectionFinish): 
                 stripped_ids = [x.split('::')[1] for x in event.node_ids]
                 print(f'HOOK: ' + ', '.join(stripped_ids))
+                for x in event.node_ids:
+                    print('XVIRT: ' + x)
 
             from xvirt.events import EvtRuntestLogreport
             if isinstance(event, EvtRuntestLogreport):
@@ -33,4 +35,4 @@ def test_transport(pytester: Pytester) -> None:
     res.stdout.fnmatch_lines_random(["*HOOK: test_a"])
     res.stdout.fnmatch_lines_random(["*HOOK: test_b"])
     res.stdout.fnmatch_lines_random(["*HOOK: test_c"])
-
+    print(res.stdout.lines)
