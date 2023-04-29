@@ -6,7 +6,7 @@ from pytest import Pytester
 def test_transport(pytester: Pytester) -> None:
     pytester.makeconftest(
         f"""
-        def pytest_xvirt_notify(event,session):
+        def pytest_xvirt_notify(event, config):
 
             from xvirt.events import EvtCollectionFinish
             if isinstance(event, EvtCollectionFinish): 
@@ -17,7 +17,7 @@ def test_transport(pytester: Pytester) -> None:
 
             from xvirt.events import EvtRuntestLogreport
             if isinstance(event, EvtRuntestLogreport):
-                report = session.config.hook.pytest_report_from_serializable(config=session.config, data=event.data)
+                report = config.hook.pytest_report_from_serializable(config=config, data=event.data)
                 print('HOOK: ' + report.location[2])                            
     """
     )
