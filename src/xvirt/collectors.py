@@ -35,12 +35,10 @@ class VItem(VNode):
 
 @dataclass()
 class VCollector(VNode):
-    collectors: Optional[Dict[str, 'VCollector']] = None
+    collectors: Dict[str, 'VCollector'] = field(default_factory=dict)
     items: List[VItem] = field(default_factory=list)
 
     def collector(self, nodeid: str) -> 'VCollector':
-        if self.collectors is None:
-            self.collectors = dict()
         result = self.collectors.get(nodeid, None)
         if result is not None:
             return result
@@ -50,16 +48,7 @@ class VCollector(VNode):
         return result
 
 
-# VNode = List[Union[str, Dict[str, 'VNode']]]
-# VNode = Dict[str, Union[List[str], str, 'VNode']]
-
-
 def _rebuild_tree(nodeids: List[str]) -> Dict[str, VCollector]:
-    """ the result is an array. One element of the array
-     can be a str or a Dict
-     Node = Array[ Union [str, Dict[str, Node]] ]
-     """
-
     result = VCollector('')
 
     for nodeid in nodeids:
