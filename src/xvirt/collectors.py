@@ -54,13 +54,11 @@ def _rebuild_tree(nodeids: List[str]) -> Dict[str, VCollector]:
     for nodeid in nodeids:
         (key, value) = nodeid.split('::', 1)
         path = key.split('/')
-        vcollector = result
-        vcollector_nodeid = ''
-        sep = ''
-        for part in path:
-            vcollector_nodeid = vcollector_nodeid + sep + part
-            vcollector = vcollector.collector(vcollector_nodeid)
-            sep = '/'
-        vcollector.items.append(VItem(nodeid))
+        collector = result
+        for idx in range(len(path)):
+            collector_nodeid = '/'.join(path[:idx + 1])
+            collector = collector.collector(collector_nodeid)
+
+        collector.items.append(VItem(nodeid))
 
     return result.collectors
