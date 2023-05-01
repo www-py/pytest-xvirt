@@ -49,16 +49,16 @@ class VCollector(VNode):
 
 
 def _rebuild_tree(nodeids: List[str]) -> Dict[str, VCollector]:
-    result = VCollector('')
+    root = VCollector('')
 
     for nodeid in nodeids:
         (key, value) = nodeid.split('::', 1)
         path = key.split('/')
-        collector = result
+        collector = root
         for idx in range(len(path)):
             collector_nodeid = '/'.join(path[:idx + 1])
             collector = collector.collector(collector_nodeid)
 
         collector.items.append(VItem(nodeid))
 
-    return result.collectors
+    return root.collectors
