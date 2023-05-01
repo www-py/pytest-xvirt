@@ -38,25 +38,28 @@ def test_rebuild_tree__node_and_leaf():
         'foo/some_test.py::test_1',
         'foo/some_test.py::test_2',
         'foo/sub/sub_test.py::test_3',
-        'foo/sub/sub_test.py::TestBar::test_bar_1',
-        'foo/sub/sub_test.py::TestBar::test_bar_2',
     ]
 
     actual = _rebuild_tree(nodeids)
-    expect = [
-        {'foo': [
-            {'some_test.py': ['test_1', 'test_2']},
-            {
-                'sub': [
-                    {
-                        'sub_test.py': [
-                            'test_3',
-                            {'TestBar': ['test_bar_1', 'test_bar_2']}
-                        ]
-                    }
+    expect = {'foo': VCollector(
+        'foo', collectors={
+            'foo/some_test.py': VCollector(
+                'foo/some_test.py', items=[
+                    VItem('foo/some_test.py::test_1'),
+                    VItem('foo/some_test.py::test_2'),
                 ]
-            }
-        ]}]
+            ),
+            'foo/sub': VCollector(
+                'foo/sub', collectors={
+                    'foo/sub/sub_test.py': VCollector(
+                        'foo/sub/sub_test.py', items=[
+                            VItem('foo/sub/sub_test.py::test_3'),
+                        ]
+                    )
+                }
+            )
+        }
+    )}
     assert actual == expect
 
 
