@@ -36,7 +36,7 @@ class VItem(VNode):
 @dataclass()
 class VCollector(VNode):
     collectors: Optional[Dict[str, 'VCollector']] = None
-    items: Optional[Dict[str, VItem]] = None
+    items: Optional[List[VItem]] = None
 
     def collector(self, name: str) -> 'VCollector':
         if self.collectors is None:
@@ -49,11 +49,11 @@ class VCollector(VNode):
         self.collectors[name] = result
         return result
 
-    def add_item(self, name: str) -> VItem:
+    def add_item(self, key_name: str, nodeid: str) -> VItem:
         if self.items is None:
-            self.items = dict()
-        result = VItem(name)
-        self.items[name] = result
+            self.items = []
+        result = VItem(nodeid)
+        self.items.append(result)
         return result
 
 
@@ -75,6 +75,6 @@ def _rebuild_tree(nodeids: List[str]) -> Dict[str, VCollector]:
         vcollector = result
         for part in path:
             vcollector = vcollector.collector(part)
-        vcollector.add_item(value)
+        vcollector.add_item(value, nodeid)
 
     return result.collectors

@@ -25,10 +25,10 @@ def test_rebuild_tree__flat():
 
     actual = _rebuild_tree(nodeids)
     expect = {'mock_test.py': VCollector(
-        'mock_test.py', items={
-            'test_1': VItem('test_1'),
-            'test_2': VItem('test_2')
-        })
+        'mock_test.py', items=[
+            VItem('mock_test.py::test_1'),
+            VItem('mock_test.py::test_2')
+        ])
     }
     assert actual == expect
 
