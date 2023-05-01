@@ -14,8 +14,10 @@ class MockCollector(Collector):
         def m(name):
             return MockItem.from_parent(self, name=name)
 
-        return [m('test_a'), m('test_b')]
+        return [m('test_1'), m('test_1')]
 
     @property
     def nodeid(self) -> str:
-        return "test_transport.py"
+        return "mock_test.py"
+
+
