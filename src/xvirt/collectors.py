@@ -35,26 +35,46 @@ class VItem(VNode):
 
 @dataclass()
 class VCollector(VNode):
-    collectors: Dict[str, 'VCollector']
-    items: Dict[str, VItem]
+    collectors: Optional[Dict[str, 'VCollector']] = None
+    items: Optional[Dict[str, VItem]] = None
+
+    def collector(self, name: str) -> 'VCollector':
+        if self.collectors is None:
+            self.collectors = dict()
+        result = self.collectors.get(name, None)
+        if result is not None:
+            return result
+
+        result = VCollector(name)
+        self.collectors[name] = result
+        return result
+
+    def add_item(self, name: str) -> VItem:
+        if self.items is None:
+            self.items = dict()
+        result = VItem(name)
+        self.items[name] = result
+        return result
 
 
 # VNode = List[Union[str, Dict[str, 'VNode']]]
 # VNode = Dict[str, Union[List[str], str, 'VNode']]
 
 
-def _rebuild_tree(nodeids: List[str]) -> Dict[str, 'VCollector']:
+def _rebuild_tree(nodeids: List[str]) -> Dict[str, VCollector]:
     """ the result is an array. One element of the array
      can be a str or a Dict
      Node = Array[ Union [str, Dict[str, Node]] ]
      """
-    import re
 
     result = VCollector('')
 
     for nodeid in nodeids:
-        parts = re.split('::|/', nodeid)
-        key = parts[0]
-        value = parts[1]
-        result[key].append(value)
-    return dict(result)
+        (key, value) = nodeid.split('::', 1)
+        path = key.split('/')
+        vcollector = result
+        for part in path:
+            vcollector = vcollector.collector(part)
+        vcollector.add_item(value)
+
+    return result.collectors

@@ -1,6 +1,6 @@
 from pytest import Pytester
 
-from xvirt.collectors import _rebuild_tree
+from xvirt.collectors import _rebuild_tree, VCollector, VItem
 
 
 def test_collectors(pytester: Pytester):
@@ -24,7 +24,12 @@ def test_rebuild_tree__flat():
     nodeids = ['mock_test.py::test_1', 'mock_test.py::test_2']
 
     actual = _rebuild_tree(nodeids)
-    expect = {'mock_test.py': ['test_1', 'test_2']}
+    expect = {'mock_test.py': VCollector(
+        'mock_test.py', items={
+            'test_1': VItem('test_1'),
+            'test_2': VItem('test_2')
+        })
+    }
     assert actual == expect
 
 
@@ -53,6 +58,7 @@ def test_rebuild_tree__node_and_leaf():
             }
         ]}]
     assert actual == expect
+
 
 def test_skip_module__should_skip_submodule2(pytester: Pytester):
     foo = pytester.mkpydir('foo')
