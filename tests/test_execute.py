@@ -1,8 +1,6 @@
 from pytest import Pytester
 
 
-# todo raccogliere dei event.node_ids di alcuni test (magari nidificati, non piatti)
-# todo e trovare un modo di metterli nella pytest_collect_file per ricreare la struttura ad albero
 def test_transport(pytester: Pytester) -> None:
     pytester.makeconftest(
         f"""
