@@ -8,7 +8,7 @@ def pytest_addoption(parser):
     group.addoption(
         '--xvirt-folder',
         action='store',
-        dest='xvirt_package',
+        dest='xvirt_package2',
         default='',
         # help='todo'
     )
@@ -16,9 +16,17 @@ def pytest_addoption(parser):
     parser.addini('HELLO', 'Dummy pytest.ini setting')
 
 
+@pytest.hookimpl
+def pytest_addhooks(pluginmanager):
+    from xvirt import newhooks
+
+    pluginmanager.add_hookspecs(newhooks)
+
+
 @pytest.hookimpl(tryfirst=True)
 def pytest_configure(config) -> None:
     config.pluginmanager.register(XvirtPlugin(config), "xvirt-plugin")
+    config.hook.pytest_xvirt_setup(config=config)
 
 
 class XvirtPlugin:
@@ -28,7 +36,6 @@ class XvirtPlugin:
 
     @pytest.hookimpl
     def pytest_runtest_logreport(self, report):
-
         config = self._config
         data = config.hook.pytest_report_to_serializable(config=config, report=report)
         import json
@@ -39,6 +46,8 @@ class XvirtPlugin:
 
 
 def pytest_pycollect_makemodule(module_path, path, parent):
+    if not hasattr(parent.config.option, 'xvirt_package'):
+        return None
     if parent.config.option.xvirt_package == '':
         return None
     if str(module_path.parent).startswith(parent.config.option.xvirt_package):
@@ -53,13 +62,6 @@ def pytest_collect_file(file_path: Path, path, parent):
 
 def pytest_pycollect_makeitem(collector, name, obj):
     pass
-
-
-@pytest.hookimpl
-def pytest_addhooks(pluginmanager):
-    from xvirt import newhooks
-
-    pluginmanager.add_hookspecs(newhooks)
 
 
 @pytest.hookimpl
