@@ -1,22 +1,34 @@
+import json
+
 from pytest import Pytester
 
 from xvirt.collectors import _rebuild_tree, VCollector, VItem
 
 
 def test_collectors(pytester: Pytester):
+    nodeids = [
+        'mock_test.py::test_1',
+        'mock_test.py::test_2',
+        'foo/sub/sub_test.py::TestBar::test_bar_1',
+        'foo/sub/sub_test.py::TestBar::test_bar_2',
+        'foo/some_test.py::test_1',
+        'foo/some_test.py::test_2',
+        'foo/sub/sub_test.py::test_3',
+    ]
+    nodeids_json = json.dumps(nodeids)
     pytester.makeconftest(
         f"""
             def pytest_collect_file(file_path, path, parent):
                 from xvirt.collectors import VirtCollector
                 result = VirtCollector.from_parent(parent, name=file_path.name)
-                result.nodeid_array = ['mock_test.py::test_1', 'mock_test.py::test_2']
+                result.nodeid_array = {nodeids_json}
                 return result
                            
         """
     )
     result = pytester.runpytest('-v')
     stdout_lines = '\n'.join(result.stdout.lines)
-    for nodeid in ['mock_test.py::test_1', 'mock_test.py::test_2']:
+    for nodeid in nodeids:
         assert nodeid in stdout_lines
 
 
