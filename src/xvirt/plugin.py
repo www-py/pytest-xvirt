@@ -4,6 +4,8 @@ import pytest
 
 
 def pytest_addoption(parser):
+    # todo set a switch --xvirt-execute-package to signal we are in remote and we want to execute the tests in this package
+
     group = parser.getgroup('xvirt')
     group.addoption(
         '--xvirt-folder',
