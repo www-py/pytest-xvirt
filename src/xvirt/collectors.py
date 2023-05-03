@@ -22,7 +22,3 @@ class VirtCollector(Collector):
             virt_item._virt_nodeid = nodeid
             items.append(virt_item)
         return items
-
-    @property
-    def nodeid(self) -> str:
-        return 'should-not-be-used-1'
