@@ -30,7 +30,6 @@ def test_collectors(pytester: Pytester):
         assert nodeid in stdout_lines
 
 
-
 def test_skip_module__should_skip_submodule2(pytester: Pytester):
     foo = pytester.mkpydir('foo')
     (foo / 'some_test.py').write_text(
