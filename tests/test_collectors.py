@@ -3,6 +3,10 @@ import json
 from pytest import Pytester
 
 
+# todo new test: it should read xvirt_packages and hook pytest_collect_file of
+#  'empty' package and call custom pytest_xvirt_collect.
+
+
 def test_collectors(pytester: Pytester):
     nodeids = [
         'mock_test.py::test_1',
