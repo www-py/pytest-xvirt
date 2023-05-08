@@ -1,7 +1,7 @@
 from pytest import Pytester
 
 
-def test_transport(pytester: Pytester) -> None:
+def test_newhook_xvirt_notify(pytester: Pytester) -> None:
     pytester.makeconftest(
         f"""
         def pytest_xvirt_notify(event, config):
