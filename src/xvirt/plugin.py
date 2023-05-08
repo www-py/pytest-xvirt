@@ -3,21 +3,6 @@ from pathlib import Path
 import pytest
 
 
-def pytest_addoption(parser):
-    # todo set a switch --xvirt-execute-package to signal we are in remote and we want to execute the tests in this package
-
-    group = parser.getgroup('xvirt')
-    group.addoption(
-        '--xvirt-folder',
-        action='store',
-        dest='xvirt_package2',
-        default='',
-        # help='todo'
-    )
-
-    parser.addini('HELLO', 'Dummy pytest.ini setting')
-
-
 @pytest.hookimpl
 def pytest_addhooks(pluginmanager):
     from xvirt import newhooks
