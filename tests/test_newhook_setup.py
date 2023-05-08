@@ -23,7 +23,7 @@ def test_no_execute_for_submodule(pytester: Pytester):
 def _setup__pytest_xvirt_setup(pytester, remote):
     remote_str = str(remote)
     content = f"""            
-                def pytest_xvirt_setup(config):
-                    config.option.xvirt_package = '{remote_str}'       
+                def pytest_xvirt_setup(config, xvirt_packages):
+                    xvirt_packages.append('{remote_str}')
             """
     pytester.makeconftest(content)

@@ -1,3 +1,5 @@
+from typing import List
+
 import pytest
 
 from xvirt.events import Evt
@@ -10,5 +12,5 @@ def pytest_xvirt_notify(event: Evt, config: Config):
 
 
 @pytest.hookspec()
-def pytest_xvirt_setup(config: Config):
+def pytest_xvirt_setup(xvirt_packages: List[str], config: Config):
     pass

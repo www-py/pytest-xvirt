@@ -13,7 +13,13 @@ def pytest_addhooks(pluginmanager):
 @pytest.hookimpl(tryfirst=True)
 def pytest_configure(config) -> None:
     config.pluginmanager.register(XvirtPlugin(config), "xvirt-plugin")
-    config.hook.pytest_xvirt_setup(config=config)
+    xvirt_packages = []
+    config.hook.pytest_xvirt_setup(config=config, xvirt_packages=xvirt_packages)
+    if len(xvirt_packages) == 1:
+        config.option.xvirt_package = xvirt_packages[0]
+        return
+    if len(xvirt_packages) > 1:
+        raise Exception('multiple packages not supported')
 
 
 class XvirtPlugin:
