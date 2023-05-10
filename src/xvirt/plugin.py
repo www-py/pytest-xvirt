@@ -26,6 +26,7 @@ class XvirtPlugin:
 
     def __init__(self, config) -> None:
         self._config = config
+        config.option.xvirt_bool = False
 
     @pytest.hookimpl
     def pytest_runtest_logreport(self, report):
@@ -49,15 +50,9 @@ def pytest_pycollect_makemodule(module_path, path, parent):
     return None
 
 
-_bool = False
-
-
 @pytest.hookimpl
 def pytest_collect_file(file_path: Path, path, parent):
     # return None
-    global _bool
-    if _bool:
-        return
     if not hasattr(parent.config.option, 'xvirt_package'):
         return None
     if parent.config.option.xvirt_package == '':
@@ -65,7 +60,11 @@ def pytest_collect_file(file_path: Path, path, parent):
 
     if not str(file_path).startswith(parent.config.option.xvirt_package):
         return None
-    _bool = True
+
+    if parent.config.option.xvirt_bool:
+        return
+    parent.config.option.xvirt_bool = True
+
     result = parent.config.hook.pytest_xvirt_collect_file(file_path=file_path, path=path, parent=parent)
     if len(result) == 0:
         return None
