@@ -22,11 +22,9 @@ def test_no_execute_for_submodule(pytester: Pytester):
     pytester.runpytest().assert_outcomes(passed=2)
 
 
-# todo new test: it should read xvirt_packages and hook pytest_collect_file of
-#  'empty' package and call custom pytest_xvirt_collect.
-
 def test_xvirt_collect(pytester: Pytester):
     foo = pytester.mkpydir('foo')
+
     (foo / 'sub_test.py').write_text('even no valid python')
 
     nodeids = ['m_test.py::test_a', 'm_test.py::test_b', 'm_test.py::test_c']
@@ -48,6 +46,21 @@ def pytest_xvirt_collect_file(file_path, path, parent):
 
     result.assert_outcomes(passed=3)
 
+
+def test_xvirt_collect_should_not_be_called(pytester: Pytester):
+    bar = pytester.mkpydir('bar')
+    (bar / 'bar_test.py').write_text('def test_bar(): pass')
+
+    foo = pytester.mkpydir('foo')
+    (foo / 'sub_test.py').write_text('even no valid python')
+
+    _setup__pytest_xvirt_setup(pytester, foo, additional=f"""
+def pytest_xvirt_collect_file(file_path, path, parent):   
+    assert 'this should not be executed' == ''
+    """)
+
+    result = pytester.runpytest(f'{bar}/')
+    result.assert_outcomes(passed=1)
 
 def _setup__pytest_xvirt_setup(pytester, remote, additional=''):
     remote_str = str(remote)
