@@ -14,3 +14,8 @@ def pytest_xvirt_notify(event: Evt, config: Config):
 @pytest.hookspec()
 def pytest_xvirt_setup(xvirt_packages: List[str], config: Config):
     pass
+
+
+@pytest.hookspec()
+def pytest_xvirt_collect_file(file_path, path, parent):
+    pass

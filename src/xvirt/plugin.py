@@ -49,8 +49,26 @@ def pytest_pycollect_makemodule(module_path, path, parent):
     return None
 
 
+_bool = False
+
+
+@pytest.hookimpl
 def pytest_collect_file(file_path: Path, path, parent):
-    pass
+    # return None
+    global _bool
+    if _bool:
+        return
+    if not hasattr(parent.config.option, 'xvirt_package'):
+        return None
+    if parent.config.option.xvirt_package == '':
+        return None
+
+    if not str(file_path).startswith(parent.config.option.xvirt_package):
+        return None
+    _bool = True
+    result = parent.config.hook.pytest_xvirt_collect_file(file_path=file_path, path=path, parent=parent)
+    assert len(result) == 1
+    return result[0]
 
 
 def pytest_pycollect_makeitem(collector, name, obj):
