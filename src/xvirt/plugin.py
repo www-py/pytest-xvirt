@@ -67,6 +67,8 @@ def pytest_collect_file(file_path: Path, path, parent):
         return None
     _bool = True
     result = parent.config.hook.pytest_xvirt_collect_file(file_path=file_path, path=path, parent=parent)
+    if len(result) == 0:
+        return None
     assert len(result) == 1
     return result[0]
 
