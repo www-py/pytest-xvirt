@@ -50,26 +50,26 @@ class XvirtPlugin:
         return None
 
 
-@pytest.hookimpl
-def pytest_collect_file(file_path: Path, path, parent):
-    # return None
-    if not hasattr(parent.config.option, 'xvirt_package'):
-        return None
-    if parent.config.option.xvirt_package == '':
-        return None
+    @pytest.hookimpl
+    def pytest_collect_file(self,file_path: Path, path, parent):
+        # return None
+        if not hasattr(parent.config.option, 'xvirt_package'):
+            return None
+        if parent.config.option.xvirt_package == '':
+            return None
 
-    if not str(file_path).startswith(parent.config.option.xvirt_package):
-        return None
+        if not str(file_path).startswith(parent.config.option.xvirt_package):
+            return None
 
-    if parent.config.option.xvirt_bool:
-        return
-    parent.config.option.xvirt_bool = True
+        if parent.config.option.xvirt_bool:
+            return
+        parent.config.option.xvirt_bool = True
 
-    result = parent.config.hook.pytest_xvirt_collect_file(file_path=file_path, path=path, parent=parent)
-    if len(result) == 0:
-        return None
-    assert len(result) == 1
-    return result[0]
+        result = parent.config.hook.pytest_xvirt_collect_file(file_path=file_path, path=path, parent=parent)
+        if len(result) == 0:
+            return None
+        assert len(result) == 1
+        return result[0]
 
 
 def pytest_pycollect_makeitem(collector, name, obj):
