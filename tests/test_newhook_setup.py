@@ -43,12 +43,11 @@ def pytest_xvirt_collect_file(file_path, path, parent):
     result = pytester.runpytest('-v')
     stdout_lines = '\n'.join(result.stdout.lines)
 
-    # assert stdout_lines == ''
-
     for nodeid in nodeids:
         assert nodeid in stdout_lines
 
     result.assert_outcomes(passed=3)
+
 
 def _setup__pytest_xvirt_setup(pytester, remote, additional=''):
     remote_str = str(remote)
