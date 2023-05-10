@@ -12,21 +12,24 @@ def pytest_addhooks(pluginmanager):
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_configure(config) -> None:
-    config.pluginmanager.register(XvirtPlugin(config), "xvirt-plugin")
     xvirt_packages = []
     config.hook.pytest_xvirt_setup(config=config, xvirt_packages=xvirt_packages)
+    xvirt_package = ''
     if len(xvirt_packages) == 1:
-        config.option.xvirt_package = xvirt_packages[0]
-        return
-    if len(xvirt_packages) > 1:
+        xvirt_package = xvirt_packages[0]
+        # config.option.xvirt_package = xvirt_package
+    elif len(xvirt_packages) > 1:
         raise Exception('multiple packages not supported')
+
+    config.pluginmanager.register(XvirtPlugin(config, xvirt_package), "xvirt-plugin")
 
 
 class XvirtPlugin:
 
-    def __init__(self, config) -> None:
+    def __init__(self, config, xvirt_package) -> None:
         self._config = config
         self._xvirt_collect_file_done = False
+        self._xvirt_package = xvirt_package
 
     @pytest.hookimpl
     def pytest_runtest_logreport(self, report):
@@ -40,28 +43,19 @@ class XvirtPlugin:
 
     @pytest.hookimpl
     def pytest_pycollect_makemodule(self, module_path, path, parent):
-        if not hasattr(parent.config.option, 'xvirt_package'):
-            return None
-        if parent.config.option.xvirt_package == '':
-            return None
-        if str(module_path.parent).startswith(parent.config.option.xvirt_package):
+        if self.is_xvirt_package(module_path.parent):
             empty = Path(__file__).parent / 'empty'
             return pytest.Module.from_parent(parent, fspath=empty)
-        return None
 
     @pytest.hookimpl
     def pytest_collect_file(self, file_path: Path, path, parent):
-        # return None
-        if not hasattr(parent.config.option, 'xvirt_package'):
-            return None
-        if parent.config.option.xvirt_package == '':
-            return None
 
-        if not str(file_path).startswith(parent.config.option.xvirt_package):
+        if not self.is_xvirt_package(file_path):
             return None
 
         if self._xvirt_collect_file_done:
             return
+
         self._xvirt_collect_file_done = True
 
         result = parent.config.hook.pytest_xvirt_collect_file(file_path=file_path, path=path, parent=parent)
@@ -69,6 +63,12 @@ class XvirtPlugin:
             return None
         assert len(result) == 1
         return result[0]
+
+    def is_xvirt_package(self, path):
+        if self._xvirt_package == '':
+            return False
+        str_path = str(path)
+        return str_path.startswith(self._xvirt_package)
 
 
 @pytest.hookimpl
