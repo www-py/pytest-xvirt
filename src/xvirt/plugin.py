@@ -38,16 +38,16 @@ class XvirtPlugin:
         event = EvtRuntestLogreport(data)
         config.hook.pytest_xvirt_notify(event=event, config=config)
 
-
-def pytest_pycollect_makemodule(module_path, path, parent):
-    if not hasattr(parent.config.option, 'xvirt_package'):
+    @pytest.hookimpl
+    def pytest_pycollect_makemodule(self, module_path, path, parent):
+        if not hasattr(parent.config.option, 'xvirt_package'):
+            return None
+        if parent.config.option.xvirt_package == '':
+            return None
+        if str(module_path.parent).startswith(parent.config.option.xvirt_package):
+            empty = Path(__file__).parent / 'empty'
+            return pytest.Module.from_parent(parent, fspath=empty)
         return None
-    if parent.config.option.xvirt_package == '':
-        return None
-    if str(module_path.parent).startswith(parent.config.option.xvirt_package):
-        empty = Path(__file__).parent / 'empty'
-        return pytest.Module.from_parent(parent, fspath=empty)
-    return None
 
 
 @pytest.hookimpl
