@@ -33,6 +33,8 @@ class XvirtPlugin:
 
     @pytest.hookimpl
     def pytest_runtest_logreport(self, report):
+        if report.when != 'call':
+            return
         config = self._config
         data = config.hook.pytest_report_to_serializable(config=config, report=report)
         import json

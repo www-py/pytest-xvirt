@@ -9,14 +9,14 @@ def test_newhook_xvirt_notify(pytester: Pytester) -> None:
             from xvirt.events import EvtCollectionFinish
             if isinstance(event, EvtCollectionFinish): 
                 stripped_ids = [x.split('::')[1] for x in event.node_ids]
-                print(f'HOOK: ' + ', '.join(stripped_ids))
+                print('\\nHOOK1: ' + ', '.join(stripped_ids))
                 for x in event.node_ids:
                     print('XVIRT: ' + x)
 
             from xvirt.events import EvtRuntestLogreport
             if isinstance(event, EvtRuntestLogreport):
                 report = config.hook.pytest_report_from_serializable(config=config, data=event.data)
-                print('HOOK: ' + report.location[2])                            
+                print('\\nHOOK2: ' + report.location[2] + ' ' + ( 'OK' if report.passed else 'BAD') )                            
     """
     )
     pytester.makepyfile(
@@ -24,13 +24,27 @@ def test_newhook_xvirt_notify(pytester: Pytester) -> None:
         import os
         def test_a(): pass
         def test_b(): pass
-        def test_c(): pass
+        def test_c(): 
+            1/0
     """
     )
-    res = pytester.runpytest()
-    res.stdout.fnmatch_lines_random(["*HOOK: test_a, test_b, test_c"])
-
-    res.stdout.fnmatch_lines_random(["*HOOK: test_a"])
-    res.stdout.fnmatch_lines_random(["*HOOK: test_b"])
-    res.stdout.fnmatch_lines_random(["*HOOK: test_c"])
+    res = pytester.runpytest('-q')
     print(res.stdout.lines)
+    exactly_once = new_verifier(res.stdout.lines)
+
+    exactly_once("HOOK1: test_a, test_b, test_c")
+    exactly_once("HOOK2: test_a OK")
+    exactly_once("HOOK2: test_b OK")
+    exactly_once("HOOK2: test_c BAD")
+
+
+def new_verifier(lines):
+    def v(string):
+        counter = 0
+        for line in lines:
+            if string == line:
+                counter += 1
+        if counter != 1:
+            raise Exception(f'Line `{string} was found {counter} times`')
+
+    return v
