@@ -1,4 +1,5 @@
 import socket
+import subprocess
 from pathlib import Path
 import tempfile
 from distutils.dir_util import copy_tree
@@ -13,17 +14,16 @@ tcp_port = 1234567890
 
 # this file is run in inception-level-1; it is executed inside pytester
 
-def pytest_xvirt_collect_file(file_path, path, parent, xvirt_package):
+def pytest_xvirt_collect_file(file_path, path, parent):
     remote_root = tempfile.mkdtemp('remote_root')
-    copy_tree(xvirt_package, remote_root)
+    # remove the following line
+    remote_root = '/tmp/xv1'
+    copy_tree(file_path.parent, remote_root)
     (Path(remote_root) / 'conftest.py').write_text(_end2end_support_client)
     ss = SocketServer()
 
-    def client_pytest():
-        pytest.run(f'{remote_root}/')
-        pass
-
-    Thread(target=client_pytest, daemon=True).start()
+    # subprocess.run(["pytest", str(file_path) + '/'])
+    # subprocess.run(["sleep", '4s'])
 
     evt = ss.read_event()
     assert isinstance(evt, EvtCollectionFinish)
@@ -34,23 +34,25 @@ def pytest_xvirt_collect_file(file_path, path, parent, xvirt_package):
 
 
 class SocketServer:
+    timeout = 20.0
 
     def __init__(self) -> None:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(('localhost', tcp_port))
         s.listen(0)
+        s.settimeout(self.timeout)
         self.socket = s
         self.client = None
 
     def read_event(self) -> Evt:
-
         if self.client is None:
             client, _ = self.socket.accept()
+            client.settimeout(self.timeout)
             self.client = client
 
         # todo handle both mtu/chunking & carriage return as message delimiter
         data = self.client.recv(1024 * 16)
-        json_str = data.decode()
+        json_str = data.decode('utf-8')
         return Evt.from_json(json_str)
 
 
