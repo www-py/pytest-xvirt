@@ -26,7 +26,7 @@ def pytest_xvirt_collect_file(file_path, path, parent):
         pytest.main([str(remote_root)])
 
     Thread(target=run_pytest, daemon=True).start()
-    sleep(0.2)
+    sleep(0.2) # todo fix timeout patch
     evt = ss.read_event()
     assert isinstance(evt, EvtCollectionFinish)
     from xvirt.collectors import VirtCollector
