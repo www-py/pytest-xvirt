@@ -15,6 +15,7 @@ def test_collectors(pytester: Pytester):
     ]
     nodeids_json = json.dumps(nodeids)
     pytester.makeconftest(
+        # language=python
         f"""
             def pytest_collect_file(file_path, path, parent):
                 from xvirt.collectors import VirtCollector

@@ -4,10 +4,14 @@ import tempfile
 from distutils.dir_util import copy_tree
 from threading import Thread
 
-from xvirt.events import Evt
+import pytest
+
+from xvirt.events import Evt, EvtCollectionFinish
 
 tcp_port = 1234567890
 
+
+# this file is run in inception-level-1; it is executed inside pytester
 
 def pytest_xvirt_collect_file(file_path, path, parent, xvirt_package):
     remote_root = tempfile.mkdtemp('remote_root')
@@ -16,16 +20,16 @@ def pytest_xvirt_collect_file(file_path, path, parent, xvirt_package):
     ss = SocketServer()
 
     def client_pytest():
-        #  todo pytest.run('{remote_root}/')
+        pytest.run(f'{remote_root}/')
         pass
 
     Thread(target=client_pytest, daemon=True).start()
 
-    ss.read_event()
-    package_path = Path(xvirt_package)
+    evt = ss.read_event()
+    assert isinstance(evt, EvtCollectionFinish)
     from xvirt.collectors import VirtCollector
     result = VirtCollector.from_parent(parent, name=file_path.name)
-    result.nodeid_array = []
+    result.nodeid_array = evt.node_ids
     return result
 
 
@@ -36,13 +40,18 @@ class SocketServer:
         s.bind(('localhost', tcp_port))
         s.listen(0)
         self.socket = s
+        self.client = None
 
     def read_event(self) -> Evt:
-        pass
-        # todo accept() #
-        # client.read() # until first \n
-        # use Evt.from_json()
-        return
+
+        if self.client is None:
+            client, _ = self.socket.accept()
+            self.client = client
+
+        # todo handle both mtu/chunking & carriage return as message delimiter
+        data = self.client.recv(1024 * 16)
+        json_str = data.decode()
+        return Evt.from_json(json_str)
 
 
 def start_server():
@@ -62,5 +71,5 @@ def start_server():
 
 # language=python
 _end2end_support_client = """
-import pathlib
+##end2end_support_client_marker##
 """
