@@ -1,9 +1,11 @@
+import os
 import socket
 import subprocess
 from pathlib import Path
 import tempfile
 from distutils.dir_util import copy_tree
 from threading import Thread
+from time import sleep
 
 import pytest
 
@@ -16,15 +18,15 @@ tcp_port = 1234567890
 
 def pytest_xvirt_collect_file(file_path, path, parent):
     remote_root = tempfile.mkdtemp('remote_root')
-    # remove the following line
-    remote_root = '/tmp/xv1'
     copy_tree(file_path.parent, remote_root)
     (Path(remote_root) / 'conftest.py').write_text(_end2end_support_client)
     ss = SocketServer()
 
-    # subprocess.run(["pytest", str(file_path) + '/'])
-    # subprocess.run(["sleep", '4s'])
+    def run_pytest():
+        pytest.main([str(remote_root)])
 
+    Thread(target=run_pytest, daemon=True).start()
+    sleep(0.2)
     evt = ss.read_event()
     assert isinstance(evt, EvtCollectionFinish)
     from xvirt.collectors import VirtCollector
@@ -34,7 +36,7 @@ def pytest_xvirt_collect_file(file_path, path, parent):
 
 
 class SocketServer:
-    timeout = 20.0
+    timeout = 1.0
 
     def __init__(self) -> None:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
