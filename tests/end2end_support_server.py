@@ -1,9 +1,7 @@
-import os
 import socket
-import subprocess
-from pathlib import Path
 import tempfile
 from distutils.dir_util import copy_tree
+from pathlib import Path
 from threading import Thread
 from time import sleep
 
@@ -18,7 +16,6 @@ tcp_port = 1234567890
 
 def pytest_xvirt_collect_file(file_path, path, parent):
     remote_root = tempfile.mkdtemp('remote_root')
-    remote_root = '/home/simone/Documents/python/pytest-xvirt/fake_rem'
     copy_tree(file_path.parent, remote_root)
     (Path(remote_root) / 'conftest.py').write_text(_end2end_support_client)
 
@@ -26,7 +23,6 @@ def pytest_xvirt_collect_file(file_path, path, parent):
         pytest.main([str(remote_root)])
 
     Thread(target=run_pytest, daemon=True).start()
-    sleep(0.2)  # todo fix timeout patch
     evt_cf = ss.read_event()
     assert isinstance(evt_cf, EvtCollectionFinish)
     from xvirt.collectors import VirtCollector
@@ -47,7 +43,7 @@ def pytest_xvirt_collect_file(file_path, path, parent):
 
 
 class SocketServer:
-    timeout = 20.0
+    timeout = 1.0
 
     def __init__(self) -> None:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -60,11 +56,8 @@ class SocketServer:
         client, _ = self.socket.accept()
         client.settimeout(self.timeout)
 
-        # todo handle both mtu/chunking & carriage return as message delimiter
         data = client.recv(1024 * 16)
         json_str = data.decode('utf-8')
-        s = '-' * 20
-        print('\n' + s + json_str + s + '\n')
         return Evt.from_json(json_str)
 
 
