@@ -9,7 +9,7 @@ from time import sleep
 
 import pytest
 
-from xvirt.events import Evt, EvtCollectionFinish
+from xvirt.events import Evt, EvtCollectionFinish, EvtRuntestLogreport
 
 tcp_port = 1234567890
 
@@ -18,25 +18,36 @@ tcp_port = 1234567890
 
 def pytest_xvirt_collect_file(file_path, path, parent):
     remote_root = tempfile.mkdtemp('remote_root')
+    remote_root = '/home/simone/Documents/python/pytest-xvirt/fake_rem'
     copy_tree(file_path.parent, remote_root)
     (Path(remote_root) / 'conftest.py').write_text(_end2end_support_client)
-    ss = SocketServer()
 
     def run_pytest():
         pytest.main([str(remote_root)])
 
     Thread(target=run_pytest, daemon=True).start()
-    sleep(0.2) # todo fix timeout patch
-    evt = ss.read_event()
-    assert isinstance(evt, EvtCollectionFinish)
+    sleep(0.2)  # todo fix timeout patch
+    evt_cf = ss.read_event()
+    assert isinstance(evt_cf, EvtCollectionFinish)
     from xvirt.collectors import VirtCollector
     result = VirtCollector.from_parent(parent, name=file_path.name)
-    result.nodeid_array = evt.node_ids
+    result.nodeid_array = evt_cf.node_ids
+
+    # report phase
+    config = parent.config
+    recv_count = 0
+    while recv_count < len(evt_cf.node_ids):
+        evt_rep = ss.read_event()
+        assert isinstance(evt_rep, EvtRuntestLogreport)
+        rep = config.hook.pytest_report_from_serializable(config=config, data=evt_rep.data)
+        config.hook.pytest_runtest_logreport(report=rep)
+        recv_count += 1
+
     return result
 
 
 class SocketServer:
-    timeout = 1.0
+    timeout = 20.0
 
     def __init__(self) -> None:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -44,34 +55,20 @@ class SocketServer:
         s.listen(0)
         s.settimeout(self.timeout)
         self.socket = s
-        self.client = None
 
     def read_event(self) -> Evt:
-        if self.client is None:
-            client, _ = self.socket.accept()
-            client.settimeout(self.timeout)
-            self.client = client
+        client, _ = self.socket.accept()
+        client.settimeout(self.timeout)
 
         # todo handle both mtu/chunking & carriage return as message delimiter
-        data = self.client.recv(1024 * 16)
+        data = client.recv(1024 * 16)
         json_str = data.decode('utf-8')
+        s = '-' * 20
+        print('\n' + s + json_str + s + '\n')
         return Evt.from_json(json_str)
 
 
-def start_server():
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(('0.0.0.0', 4569))
-    server_socket.listen(2)
-
-    while True:
-        input('press enter to socket.accept9)')
-        client_socket, addr = server_socket.accept()
-        print("Got a connection from %s" % str(addr))
-        data = client_socket.recv(1024)
-        print("Received: %s" % data.decode('utf-8'))
-
-        client_socket.close()
-
+ss = SocketServer()
 
 # language=python
 _end2end_support_client = """

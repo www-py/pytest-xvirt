@@ -10,7 +10,8 @@ parent = Path(__file__).parent
 
 def test(pytester: Pytester):
     foo = pytester.mkpydir('foo')
-    (foo / 'some_test.py').write_text('def test_1(): pass\ndef test_2(): pass')
+    (foo / 'some_test.py').write_text('def test_1(): pass\ndef test_2(): pass\ndef test_3(): 1/0')
+    # (foo / 'some_test.py').write_text('def test_1(): pass\ndef test_2(): pass')
     tcp_port = find_port()
     additional = (parent / 'end2end_support_server.py').read_text()
     additional = additional \
@@ -19,4 +20,5 @@ def test(pytester: Pytester):
 
     _setup__pytest_xvirt_setup(pytester, foo, additional=additional)
     result = pytester.runpytest()
-    result.assert_outcomes(passed=2)
+    result.assert_outcomes(passed=2, failed=1)
+    # result.assert_outcomes(passed=2)
