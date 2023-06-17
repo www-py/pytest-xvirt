@@ -62,7 +62,13 @@ def pytest_xvirt_collect_file(file_path, path, parent):
     result = pytester.runpytest(f'{bar}/')
     result.assert_outcomes(passed=1)
 
+
 def _setup__pytest_xvirt_setup(pytester, remote, additional=''):
+    """
+    Writes a conftest.py file with a pytest_xvirt_setup hook
+    :param remote: defines the remote path to be added to xvirt_packages
+    :param additional: Additional conftest.py content
+    """
     remote_str = str(remote)
     content = f"""            
 def pytest_xvirt_setup(config, xvirt_packages):
