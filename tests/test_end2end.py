@@ -9,16 +9,20 @@ parent = Path(__file__).parent
 
 
 def test(pytester: Pytester):
+    def read_text(filename): return (parent / filename).read_text()
+
+    # GIVEN
     foo = pytester.mkpydir('foo')
     (foo / 'some_test.py').write_text('def test_1(): pass\ndef test_2(): pass\ndef test_3(): 1/0')
-    # (foo / 'some_test.py').write_text('def test_1(): pass\ndef test_2(): pass')
-    tcp_port = find_port()
-    additional = (parent / 'end2end_support_server.py').read_text()
-    additional = additional \
-        .replace('##end2end_support_client_marker##', (parent / 'end2end_support_client.py').read_text()) \
-        .replace('1234567890', str(tcp_port))  # this replaces work on 2 inception levels: server&client
+
+    additional = read_text('end2end_support_server.py') \
+        .replace('##end2end_support_client_marker##', read_text('end2end_support_client.py')) \
+        .replace('1234567890', str(find_port()))  # this replaces work on 2 inception levels: server&client
 
     _setup__pytest_xvirt_setup(pytester, foo, additional=additional)
+
+    # WHEN
     result = pytester.runpytest()
+
+    # THEN
     result.assert_outcomes(passed=2, failed=1)
-    # result.assert_outcomes(passed=2)
