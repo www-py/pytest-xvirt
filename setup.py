@@ -13,12 +13,12 @@ def read(fname):
 
 setup(
     name='pytest-xvirt',
-    version='0.1.0',
+    version='0.1.1',
     author='Simone Giacomelli, Fabrizio Lamarca',
     author_email='simone.giacomelli@gmail.com, lamarca.fabrizio@gmail.com',
     maintainer='Simone Giacomelli',
     maintainer_email='simone.giacomelli@gmail.com',
-    license='MIT',
+    license='Apache 2.0',
     url='https://github.com/www-py/pytest-xvirt',
     description='A pytest plugin to virtualize test. For example to transparently running them on a remote box.',
     long_description=read('README.rst'),
