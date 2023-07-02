@@ -64,7 +64,7 @@ class XvirtPlugin:
 
         result = parent.config.hook.pytest_xvirt_collect_file(
             file_path=file_path, path=path, parent=parent
-            , events_handler=events_handler.make(file_path, path, parent)
+            , events_handler=events_handler.make(file_path, parent)
         )
         if len(result) == 0:
             return None

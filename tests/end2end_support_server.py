@@ -35,13 +35,13 @@ class SocketServer:
         s.settimeout(self.timeout)
         self.socket = s
 
-    def read_event(self) -> Evt:
+    def read_event(self) -> str:
         client, _ = self.socket.accept()
         client.settimeout(self.timeout)
 
         data = client.recv(1024 * 16)
         json_str = data.decode('utf-8')
-        return Evt.from_json(json_str)
+        return json_str
 
 
 ss = SocketServer()

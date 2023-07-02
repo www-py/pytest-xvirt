@@ -1,9 +1,12 @@
-from xvirt.events import EvtCollectionFinish, EvtRuntestLogreport
+from xvirt.events import EvtCollectionFinish, EvtRuntestLogreport, Evt
 
 
-def make(file_path, path, parent):
+def make(file_path, parent):
     def events_handler(read_event):
-        evt_cf = read_event()
+        def read_event_dec() -> Evt:
+            return Evt.from_json(read_event())
+
+        evt_cf = read_event_dec()
         assert isinstance(evt_cf, EvtCollectionFinish)
         from xvirt.collectors import VirtCollector
         result = VirtCollector.from_parent(parent, name=file_path.name)
@@ -13,7 +16,7 @@ def make(file_path, path, parent):
         config = parent.config
         recv_count = 0
         while recv_count < len(evt_cf.node_ids):
-            evt_rep = read_event()
+            evt_rep = read_event_dec()
             assert isinstance(evt_rep, EvtRuntestLogreport)
             rep = config.hook.pytest_report_from_serializable(config=config, data=evt_rep.data)
             config.hook.pytest_runtest_logreport(report=rep)
