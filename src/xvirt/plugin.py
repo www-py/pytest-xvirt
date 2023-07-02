@@ -2,6 +2,8 @@ from pathlib import Path
 
 import pytest
 
+from xvirt import events_handler
+
 
 @pytest.hookimpl
 def pytest_addhooks(pluginmanager):
@@ -60,7 +62,10 @@ class XvirtPlugin:
 
         self._xvirt_collect_file_done = True
 
-        result = parent.config.hook.pytest_xvirt_collect_file(file_path=file_path, path=path, parent=parent)
+        result = parent.config.hook.pytest_xvirt_collect_file(
+            file_path=file_path, path=path, parent=parent
+            , events_handler=events_handler.make(file_path, path, parent)
+        )
         if len(result) == 0:
             return None
         assert len(result) == 1

@@ -14,7 +14,7 @@ tcp_port = 1234567890
 
 # this file is run in inception-level-1; it is executed inside pytester
 
-def pytest_xvirt_collect_file(file_path, path, parent):
+def pytest_xvirt_collect_file(file_path, path, parent, events_handler):
     remote_root = tempfile.mkdtemp('remote_root')
     copy_tree(file_path.parent, remote_root)
     (Path(remote_root) / 'conftest.py').write_text(_end2end_support_client)
@@ -23,6 +23,7 @@ def pytest_xvirt_collect_file(file_path, path, parent):
         pytest.main([str(remote_root)])
 
     Thread(target=run_pytest, daemon=True).start()
+    return events_handler(ss.read_event)
     evt_cf = ss.read_event()
     assert isinstance(evt_cf, EvtCollectionFinish)
     from xvirt.collectors import VirtCollector

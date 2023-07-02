@@ -17,5 +17,5 @@ def pytest_xvirt_setup(xvirt_packages: List[str], config: Config):
 
 
 @pytest.hookspec()
-def pytest_xvirt_collect_file(file_path, path, parent):
+def pytest_xvirt_collect_file(file_path, path, parent, events_handler):
     pass
