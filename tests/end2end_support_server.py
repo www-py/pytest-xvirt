@@ -3,11 +3,10 @@ import tempfile
 from distutils.dir_util import copy_tree
 from pathlib import Path
 from threading import Thread
-from time import sleep
 
 import pytest
 
-from xvirt.events import Evt, EvtCollectionFinish, EvtRuntestLogreport
+from xvirt.events import Evt
 
 tcp_port = 1234567890
 
