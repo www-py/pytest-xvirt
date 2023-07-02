@@ -24,23 +24,6 @@ def pytest_xvirt_collect_file(file_path, path, parent, events_handler):
 
     Thread(target=run_pytest, daemon=True).start()
     return events_handler(ss.read_event)
-    evt_cf = ss.read_event()
-    assert isinstance(evt_cf, EvtCollectionFinish)
-    from xvirt.collectors import VirtCollector
-    result = VirtCollector.from_parent(parent, name=file_path.name)
-    result.nodeid_array = evt_cf.node_ids
-
-    # report phase
-    config = parent.config
-    recv_count = 0
-    while recv_count < len(evt_cf.node_ids):
-        evt_rep = ss.read_event()
-        assert isinstance(evt_rep, EvtRuntestLogreport)
-        rep = config.hook.pytest_report_from_serializable(config=config, data=evt_rep.data)
-        config.hook.pytest_runtest_logreport(report=rep)
-        recv_count += 1
-
-    return result
 
 
 class SocketServer:
