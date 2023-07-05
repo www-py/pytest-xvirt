@@ -16,10 +16,11 @@ def test(pytester: Pytester):
     (foo / 'some_test.py').write_text('def test_1(): pass\ndef test_2(): pass\ndef test_3(): 1/0')
 
     additional = read_text('end2end_support_server.py') \
+        .replace('##xvirt_package_marker##', str(foo)) \
         .replace('##end2end_support_client_marker##', read_text('end2end_support_client.py')) \
         .replace('1234567890', str(find_port()))  # this replaces work on 2 inception levels: server&client
 
-    _setup__pytest_xvirt_setup(pytester, foo, additional=additional)
+    pytester.makeconftest(additional)
 
     # WHEN
     result = pytester.runpytest()

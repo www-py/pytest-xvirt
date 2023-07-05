@@ -1,8 +1,9 @@
 from pathlib import Path
+from typing import List
 
 import pytest
 
-from xvirt import events_handler
+from xvirt import events_handler, XVirt
 
 
 @pytest.hookimpl
@@ -15,20 +16,23 @@ def pytest_addhooks(pluginmanager):
 @pytest.hookimpl(tryfirst=True)
 def pytest_configure(config) -> None:
     xvirt_packages = []
-    config.hook.pytest_xvirt_setup(config=config, xvirt_packages=xvirt_packages)
+    xvirt_instances: List[XVirt] = config.hook.pytest_xvirt_setup1(config=config, xvirt_packages=xvirt_packages)
+    # if len(xvirt_instances) == 0: return
     xvirt_package = ''
-    if len(xvirt_packages) == 1:
-        xvirt_package = xvirt_packages[0]
-        # config.option.xvirt_package = xvirt_package
-    elif len(xvirt_packages) > 1:
-        raise Exception('multiple packages not supported')
+    xvirt_instance = None
+    if len(xvirt_instances) == 1:
+        xvirt_instance = xvirt_instances[0]
+        xvirt_package = xvirt_instance.remote_path()
+    elif len(xvirt_instances) > 1:
+        raise Exception('multiple xvirt users not supported')
 
-    config.pluginmanager.register(XvirtPlugin(config, xvirt_package), "xvirt-plugin")
+    config.pluginmanager.register(XvirtPlugin(xvirt_instance, config, xvirt_package), "xvirt-plugin")
 
 
 class XvirtPlugin:
 
-    def __init__(self, config, xvirt_package) -> None:
+    def __init__(self, xvirt_instance: XVirt, config, xvirt_package) -> None:
+        self._xvirt_instance = xvirt_instance
         self._config = config
         self._xvirt_collect_file_done = False
         self._xvirt_package = xvirt_package
@@ -62,14 +66,9 @@ class XvirtPlugin:
 
         self._xvirt_collect_file_done = True
 
-        result = parent.config.hook.pytest_xvirt_collect_file(
-            file_path=file_path, path=path, parent=parent
-            , events_handler=events_handler.make(file_path, parent)
-        )
-        if len(result) == 0:
-            return None
-        assert len(result) == 1
-        return result[0]
+        self._xvirt_instance.run()
+        evt_handler_fun = events_handler.make(file_path, parent)
+        return evt_handler_fun(self._xvirt_instance.read_event)
 
     def is_xvirt_package(self, path):
         if self._xvirt_package == '':
