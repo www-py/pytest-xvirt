@@ -17,7 +17,7 @@ def pytest_addhooks(pluginmanager):
 def pytest_configure(config) -> None:
     xvirt_packages = []
     xvirt_instances: List[XVirt] = config.hook.pytest_xvirt_setup1(config=config, xvirt_packages=xvirt_packages)
-    # if len(xvirt_instances) == 0: return
+    # if len(xvirt_instances) == 0: return # todo - this should not be a bug, if we uncomment this line the tests fail and it does not make sense
     xvirt_package = ''
     xvirt_instance = None
     if len(xvirt_instances) == 1:
