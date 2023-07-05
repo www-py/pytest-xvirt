@@ -15,27 +15,24 @@ def pytest_addhooks(pluginmanager):
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_configure(config) -> None:
+    config.pluginmanager.register(XvirtPluginRemote(config), "xvirt-plugin-remote")
     xvirt_packages = []
     xvirt_instances: List[XVirt] = config.hook.pytest_xvirt_setup1(config=config, xvirt_packages=xvirt_packages)
-    # if len(xvirt_instances) == 0: return # todo - this should not be a bug, if we uncomment this line the tests fail and it does not make sense
-    xvirt_package = ''
-    xvirt_instance = None
-    if len(xvirt_instances) == 1:
-        xvirt_instance = xvirt_instances[0]
-        xvirt_package = xvirt_instance.remote_path()
-    elif len(xvirt_instances) > 1:
+    instances_count = len(xvirt_instances)
+    if instances_count == 0:
+        return
+    if instances_count != 1:
         raise Exception('multiple xvirt users not supported')
 
-    config.pluginmanager.register(XvirtPlugin(xvirt_instance, config, xvirt_package), "xvirt-plugin")
+    xvirt_instance = xvirt_instances[0]
+    xvirt_package = xvirt_instance.remote_path()
+    config.pluginmanager.register(XvirtPlugin(xvirt_instance, config, xvirt_package), "xvirt-plugin-server")
 
 
-class XvirtPlugin:
+class XvirtPluginRemote:
 
-    def __init__(self, xvirt_instance: XVirt, config, xvirt_package) -> None:
-        self._xvirt_instance = xvirt_instance
+    def __init__(self, config) -> None:
         self._config = config
-        self._xvirt_collect_file_done = False
-        self._xvirt_package = xvirt_package
 
     @pytest.hookimpl
     def pytest_runtest_logreport(self, report):
@@ -48,6 +45,15 @@ class XvirtPlugin:
         from .events import EvtRuntestLogreport
         event = EvtRuntestLogreport(data)
         config.hook.pytest_xvirt_notify(event=event, config=config)
+
+
+class XvirtPlugin:
+
+    def __init__(self, xvirt_instance: XVirt, config, xvirt_package) -> None:
+        self._xvirt_instance = xvirt_instance
+        self._config = config
+        self._xvirt_collect_file_done = False
+        self._xvirt_package = xvirt_package
 
     @pytest.hookimpl
     def pytest_pycollect_makemodule(self, module_path, path, parent):
