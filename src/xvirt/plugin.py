@@ -17,7 +17,7 @@ def pytest_addhooks(pluginmanager):
 def pytest_configure(config) -> None:
     config.pluginmanager.register(XvirtPluginRemote(config), "xvirt-plugin-remote")
     xvirt_packages = []
-    xvirt_instances: List[XVirt] = config.hook.pytest_xvirt_setup1(config=config, xvirt_packages=xvirt_packages)
+    xvirt_instances: List[XVirt] = config.hook.pytest_xvirt_setup(config=config, xvirt_packages=xvirt_packages)
     instances_count = len(xvirt_instances)
     if instances_count == 0:
         return

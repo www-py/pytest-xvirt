@@ -11,7 +11,7 @@ from xvirt import XVirt
 
 # this file is run in inception-level-1; it is executed inside pytester
 
-def pytest_xvirt_setup1(config):
+def pytest_xvirt_setup(config):
     return XvirtTest1()
 
 
