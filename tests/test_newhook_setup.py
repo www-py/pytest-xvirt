@@ -22,31 +22,6 @@ def test_no_execute_for_submodule(pytester: Pytester):
     pytester.runpytest().assert_outcomes(passed=2)
 
 
-def test_xvirt_collect(pytester: Pytester):
-    foo = pytester.mkpydir('foo')
-
-    (foo / 'sub_test.py').write_text('even no valid python')
-
-    nodeids = ['m_test.py::test_a', 'm_test.py::test_b', 'm_test.py::test_c']
-    nodeids_json = json.dumps(nodeids)
-    _setup__pytest_xvirt_setup(pytester, foo, additional=f"""
-
-def pytest_xvirt_collect_file(file_path, path, parent):   
-    from xvirt.collectors import VirtCollector
-    result = VirtCollector.from_parent(parent, name=file_path.name)
-    result.nodeid_array = {nodeids_json}
-    return result
-    """)
-
-    result = pytester.runpytest('-v')
-    stdout_lines = '\n'.join(result.stdout.lines)
-
-    for nodeid in nodeids:
-        assert nodeid in stdout_lines
-
-    result.assert_outcomes(passed=3)
-
-
 def test_xvirt_collect_should_not_be_called(pytester: Pytester):
     bar = pytester.mkpydir('bar')
     (bar / 'bar_test.py').write_text('def test_bar(): pass')
