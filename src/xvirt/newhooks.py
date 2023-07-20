@@ -1,11 +1,9 @@
 import pytest
 from pytest import Config
 
-from xvirt.events import Evt
-
 
 @pytest.hookspec()
-def pytest_xvirt_notify(event: Evt, config: Config):
+def pytest_xvirt_notify(event_json: str, config: Config):
     pass
 
 

@@ -40,11 +40,9 @@ class XvirtPluginRemote:
             return
         config = self._config
         data = config.hook.pytest_report_to_serializable(config=config, report=report)
-        import json
-        data_json = json.dumps(data)
         from .events import EvtRuntestLogreport
         event = EvtRuntestLogreport(data)
-        config.hook.pytest_xvirt_notify(event=event, config=config)
+        config.hook.pytest_xvirt_notify(event_json=event.to_json(), config=config)
 
 
 class XvirtPlugin:
@@ -88,4 +86,4 @@ def pytest_collection_finish(session: pytest.Session):
     # if session.config.option.xvirt_mode == mode_controlled:
     from .events import EvtCollectionFinish
     event = EvtCollectionFinish([item.nodeid for item in session.items])
-    session.config.hook.pytest_xvirt_notify(event=event, config=session.config)
+    session.config.hook.pytest_xvirt_notify(event_json=event.to_json(), config=session.config)

@@ -4,8 +4,9 @@ from pytest import Pytester
 def test_newhook_xvirt_notify(pytester: Pytester) -> None:
     pytester.makeconftest(
         f"""
-        def pytest_xvirt_notify(event, config):
-
+        from xvirt.events import Evt
+        def pytest_xvirt_notify(event_json, config):
+            event = Evt.from_json(event_json)
             from xvirt.events import EvtCollectionFinish
             if isinstance(event, EvtCollectionFinish): 
                 stripped_ids = [x.split('::')[1] for x in event.node_ids]
