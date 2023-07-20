@@ -33,8 +33,8 @@ class XvirtTest1(XVirt):
 
         Thread(target=run_pytest, daemon=True).start()
 
-    def read_event(self) -> str:
-        return self.ss.read_event()
+    def recv_event(self) -> str:
+        return self.ss.recv_event()
 
     def finalize(self):
         pass
@@ -50,7 +50,7 @@ class SocketServer:
         s.settimeout(self.timeout)
         self.socket = s
 
-    def read_event(self) -> str:
+    def recv_event(self) -> str:
         client, _ = self.socket.accept()
         client.settimeout(self.timeout)
 

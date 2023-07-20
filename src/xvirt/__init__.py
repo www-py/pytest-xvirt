@@ -11,7 +11,7 @@ class XVirt:
         """
         pass
 
-    def read_event(self) -> str:
+    def recv_event(self) -> str:
         """Returns the next event received from the remote pytest."""
         pass
 
