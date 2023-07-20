@@ -70,9 +70,16 @@ def _setup__pytest_xvirt_setup(pytester, remote, additional=''):
     :param additional: Additional conftest.py content
     """
     remote_str = str(remote)
-    content = f"""            
-def pytest_xvirt_setup(config, xvirt_packages):
-    xvirt_packages.append('{remote_str}')
+    content = f"""    
+from xvirt import XVirt
+
+def pytest_xvirt_setup(config):
+    return XvirtTest1()
+        
+class XvirtTest1(XVirt):
+
+    def remote_path(self) -> str:
+        return '{remote_str}'
     
 {additional}"""
     pytester.makeconftest(content)
