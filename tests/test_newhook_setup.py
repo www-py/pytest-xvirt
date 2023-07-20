@@ -22,16 +22,16 @@ def test_no_execute_for_submodule(pytester: Pytester):
     pytester.runpytest().assert_outcomes(passed=2)
 
 
-def test_xvirt_collect_should_not_be_called(pytester: Pytester):
+def test_xvirt_run_should_not_be_called(pytester: Pytester):
     bar = pytester.mkpydir('bar')
     (bar / 'bar_test.py').write_text('def test_bar(): pass')
 
-    foo = pytester.mkpydir('foo')
-    (foo / 'sub_test.py').write_text('even no valid python')
+    virt = pytester.mkpydir('virt')
+    (virt / 'sub_test.py').write_text('even no valid python')
 
-    _setup__pytest_xvirt_setup(pytester, foo, additional=f"""
-def pytest_xvirt_collect_file(file_path, path, parent):   
-    assert 'this should not be executed' == ''
+    _setup__pytest_xvirt_setup(pytester, virt, additional=f"""
+    def run(self):   
+        assert 'this should not be executed' == ''
     """)
 
     result = pytester.runpytest(f'{bar}/')
