@@ -1,9 +1,7 @@
-from typing import List, Callable
-
 import pytest
+from pytest import Config
 
 from xvirt.events import Evt
-from pytest import Config
 
 
 @pytest.hookspec()

@@ -3,7 +3,6 @@ from pathlib import Path
 from pytest import Pytester
 
 from tests.find_port import find_port
-from tests.test_newhook_setup import _setup__pytest_xvirt_setup
 
 parent = Path(__file__).parent
 
