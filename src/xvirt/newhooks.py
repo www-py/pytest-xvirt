@@ -3,7 +3,7 @@ from pytest import Config
 
 
 @pytest.hookspec()
-def pytest_xvirt_notify(event_json: str, config: Config):
+def pytest_xvirt_send_event(event_json: str, config: Config):
     pass
 
 

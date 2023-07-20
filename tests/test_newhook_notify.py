@@ -5,7 +5,7 @@ def test_newhook_xvirt_notify(pytester: Pytester) -> None:
     pytester.makeconftest(
         f"""
         from xvirt.events import Evt
-        def pytest_xvirt_notify(event_json, config):
+        def pytest_xvirt_send_event(event_json, config):
             event = Evt.from_json(event_json)
             from xvirt.events import EvtCollectionFinish
             if isinstance(event, EvtCollectionFinish): 
