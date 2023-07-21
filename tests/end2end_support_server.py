@@ -37,7 +37,7 @@ class XvirtTest1(XVirt):
         return self.ss.recv_event()
 
     def finalize(self):
-        pass
+        (Path(__file__).parent / '##finalize_marker##').touch()
 
 
 class SocketServer:

@@ -72,7 +72,7 @@ class XvirtPlugin:
 
         self._xvirt_instance.run()
         evt_handler_fun = events_handler.make(file_path, parent)
-        return evt_handler_fun(self._xvirt_instance.recv_event)
+        return evt_handler_fun(self._xvirt_instance)
 
     def is_xvirt_package(self, path):
         if self._xvirt_package == '':

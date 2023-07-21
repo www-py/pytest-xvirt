@@ -1,9 +1,10 @@
+from xvirt import XVirt
 from xvirt.events import EvtCollectionFinish, EvtRuntestLogreport, Evt
 
 
 def make(file_path, parent):
-    def events_handler(recv_event):
-
+    def events_handler(xvirt_instance: XVirt):
+        recv_event = xvirt_instance.recv_event
         collection_finish_json = recv_event()
         if collection_finish_json is None:  # this means that the user did not implement the remote side
             return None
@@ -24,6 +25,7 @@ def make(file_path, parent):
             config.hook.pytest_runtest_logreport(report=rep)
             recv_count += 1
 
+        xvirt_instance.finalize()
         return result
 
     return events_handler
