@@ -13,7 +13,7 @@ def read(fname):
 
 setup(
     name='pytest-xvirt',
-    version='0.1.2',
+    version='0.1.3',
     author='Simone Giacomelli, Fabrizio Lamarca',
     author_email='simone.giacomelli@gmail.com, lamarca.fabrizio@gmail.com',
     maintainer='Simone Giacomelli',
