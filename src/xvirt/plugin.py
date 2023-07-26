@@ -25,6 +25,7 @@ def pytest_configure(config) -> None:
         raise Exception('multiple xvirt users not supported')
 
     xvirt_instance = xvirt_instances[0]
+    xvirt_instance.config = config
     xvirt_package = xvirt_instance.remote_path()
     config.pluginmanager.register(XvirtPlugin(xvirt_instance, config, xvirt_package), "xvirt-plugin-server")
 
