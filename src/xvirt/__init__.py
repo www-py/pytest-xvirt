@@ -1,4 +1,9 @@
+from pathlib import Path
+from pytest import Config
+
+
 class XVirt:
+    config: Config
 
     def virtual_path(self) -> str:
         """Returns the path to be ignored locally and executed remotely."""
@@ -19,6 +24,10 @@ class XVirt:
         """Finalize the remote execution."""
         pass
 
+    def remote_invocation_dir(self, remote_root: str) -> str:
+        return path_rewrite(self.config.invocation_dir, self.config.rootpath, remote_root)
 
-def path_rewrite(current_path: str, virtual_path: str, new_path: str) -> str:
-    return current_path.replace(virtual_path, new_path)
+
+def path_rewrite(invocation_dir, root_path: Path, remote_root: str) -> str:
+    root_path_str = str(root_path)
+    return str(invocation_dir).replace(root_path_str, remote_root)
