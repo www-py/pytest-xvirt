@@ -38,13 +38,13 @@ def test_xvirt_run_should_not_be_called(pytester: Pytester):
     result.assert_outcomes(passed=1)
 
 
-def _setup__pytest_xvirt_setup(pytester, remote, additional=''):
+def _setup__pytest_xvirt_setup(pytester, virtual_path, additional=''):
     """
     Writes a conftest.py file with a pytest_xvirt_setup hook
     :param remote: defines the remote path to be added to xvirt_packages
     :param additional: Additional conftest.py content
     """
-    remote_str = str(remote)
+    virtual_path_str = str(virtual_path)
     content = f"""    
 from xvirt import XVirt
 
@@ -53,8 +53,8 @@ def pytest_xvirt_setup(config):
         
 class XvirtTest1(XVirt):
 
-    def remote_path(self) -> str:
-        return '{remote_str}'
+    def virtual_path(self) -> str:
+        return '{virtual_path_str}'
     
 {additional}"""
     pytester.makeconftest(content)

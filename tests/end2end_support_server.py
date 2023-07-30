@@ -20,12 +20,12 @@ class XvirtTest1(XVirt):
     def __init__(self) -> None:
         self.ss = SocketServer(1234567890)  # this a placeholder marker
 
-    def remote_path(self) -> str:
+    def virtual_path(self) -> str:
         return '##xvirt_package_marker##'
 
     def run(self):
         remote_root = tempfile.mkdtemp('remote_root')
-        copy_tree(self.remote_path(), remote_root)
+        copy_tree(self.virtual_path(), remote_root)
         (Path(remote_root) / 'conftest.py').write_text(_end2end_support_client)
 
         def run_pytest():

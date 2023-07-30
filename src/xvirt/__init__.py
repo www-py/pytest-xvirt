@@ -1,6 +1,6 @@
 class XVirt:
 
-    def remote_path(self) -> str:
+    def virtual_path(self) -> str:
         """Returns the path to be ignored locally and executed remotely."""
         raise NotImplementedError()
 
@@ -18,3 +18,7 @@ class XVirt:
     def finalize(self):
         """Finalize the remote execution."""
         pass
+
+
+def path_rewrite(current_path: str, virtual_path: str, new_path: str) -> str:
+    return current_path.replace(virtual_path, new_path)

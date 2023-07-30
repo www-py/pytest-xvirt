@@ -26,7 +26,7 @@ def pytest_configure(config) -> None:
 
     xvirt_instance = xvirt_instances[0]
     xvirt_instance.config = config
-    xvirt_package = xvirt_instance.remote_path()
+    xvirt_package = xvirt_instance.virtual_path()
     config.pluginmanager.register(XvirtPlugin(xvirt_instance, config, xvirt_package), "xvirt-plugin-server")
 
 
