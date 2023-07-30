@@ -24,8 +24,13 @@ class XVirt:
         """Finalize the remote execution."""
         pass
 
-    def remote_invocation_dir(self, remote_root: str) -> str:
-        return path_rewrite(self.config.invocation_dir, self.config.rootpath, remote_root)
+    def remote_invocation_params(self, remote_root: str) -> (str, str):
+        idir = self.config.invocation_dir
+        rp = self.config.rootpath
+        rr = remote_root
+        invocation_dir = path_rewrite(idir, rp, rr)
+        args = [path_rewrite(a, rp, rr) for a in self.config.args]
+        return invocation_dir, args
 
 
 def path_rewrite(invocation_dir, root_path: Path, remote_root: str) -> str:
