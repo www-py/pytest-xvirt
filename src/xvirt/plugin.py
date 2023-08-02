@@ -45,6 +45,13 @@ class XvirtPluginRemote:
         event = EvtRuntestLogreport(data)
         config.hook.pytest_xvirt_send_event(event_json=event.to_json(), config=config)
 
+    @pytest.hookimpl
+    def pytest_collection_finish(self, session: pytest.Session):
+        # if session.config.option.xvirt_mode == mode_controlled:
+        from .events import EvtCollectionFinish
+        event = EvtCollectionFinish([item.nodeid for item in session.items])
+        session.config.hook.pytest_xvirt_send_event(event_json=event.to_json(), config=session.config)
+
 
 class XvirtPlugin:
 
@@ -81,10 +88,3 @@ class XvirtPlugin:
         str_path = str(path)
         return str_path.startswith(self._xvirt_package)
 
-
-@pytest.hookimpl
-def pytest_collection_finish(session: pytest.Session):
-    # if session.config.option.xvirt_mode == mode_controlled:
-    from .events import EvtCollectionFinish
-    event = EvtCollectionFinish([item.nodeid for item in session.items])
-    session.config.hook.pytest_xvirt_send_event(event_json=event.to_json(), config=session.config)
