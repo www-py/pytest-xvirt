@@ -1,5 +1,45 @@
+from pathlib import Path
+
+import pytest
+
 from xvirt import XVirt
 from xvirt.events import EvtCollectionFinish, EvtRuntestLogreport, Evt
+
+
+class XvirtPluginServer:
+
+    def __init__(self, xvirt_instance: XVirt, config, xvirt_package) -> None:
+        self._xvirt_instance = xvirt_instance
+        self._config = config
+        self._xvirt_collect_file_done = False
+        self._xvirt_package = xvirt_package
+
+    @pytest.hookimpl
+    def pytest_pycollect_makemodule(self, module_path, path, parent):
+        if self.is_xvirt_package(module_path.parent):
+            empty = Path(__file__).parent / 'empty'
+            return pytest.Module.from_parent(parent, fspath=empty)
+
+    @pytest.hookimpl
+    def pytest_collect_file(self, file_path: Path, path, parent):
+
+        if not self.is_xvirt_package(file_path):
+            return None
+
+        if self._xvirt_collect_file_done:
+            return
+
+        self._xvirt_collect_file_done = True
+
+        self._xvirt_instance.run()
+        evt_handler_fun = _make(file_path, parent)
+        return evt_handler_fun(self._xvirt_instance)
+
+    def is_xvirt_package(self, path):
+        if self._xvirt_package == '':
+            return False
+        str_path = str(path)
+        return str_path.startswith(self._xvirt_package)
 
 
 def _order_events2(xvirt_instance: XVirt):
@@ -29,32 +69,7 @@ def _order_events2(xvirt_instance: XVirt):
         yield re()
 
 
-def _order_events(xvirt_instance: XVirt):
-    typed_events = []
-    collection_finished_received = False
-
-    def read_event():
-        nonlocal collection_finished_received
-        if collection_finished_received:
-            if len(typed_events) == 0:
-                return xvirt_instance.recv_event()
-            else:
-                return typed_events.pop(0)
-        else:
-            event = xvirt_instance.recv_event()
-            if event is None:
-                return None
-            while True:
-                evt = Evt.from_json(event)
-                if isinstance(evt, EvtCollectionFinish):
-                    collection_finished_received = True
-                typed_events.append(evt)
-                return event
-
-    return read_event
-
-
-def make(file_path, parent):
+def _make(file_path, parent):
     def events_handler(xvirt_instance: XVirt):
 
         recv_event = _order_events2(xvirt_instance)
