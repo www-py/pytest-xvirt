@@ -13,7 +13,6 @@ class XvirtPluginServer:
         self._config = config
         self._xvirt_collect_file_done = False
         self._xvirt_package = xvirt_package
-        self._report_buffer = []
         self._report_map = {}
 
     @pytest.hookimpl
@@ -42,17 +41,8 @@ class XvirtPluginServer:
         # for rep in self._report_buffer:
         #     self._config.hook.pytest_runtest_logreport(report=rep)
 
-    def pytest_runtest_protocol(self,item, nextitem):
-        return
-        rep = self._report_map.pop(item.nodeid, None)
-        self._config.hook.pytest_runtest_logreport(report=rep)
-
-
-    def pytest_runtest_makereport(self,item, call):
-        pass
-        rep = self._report_map.pop(item.nodeid, None)
-        return rep
-        # self._config.hook.pytest_runtest_logreport(report=rep)
+    def pytest_runtest_makereport(self, item):
+        return self._report_map.pop(item.nodeid, None)
 
     def is_xvirt_package(self, path):
         if self._xvirt_package == '':
@@ -94,7 +84,6 @@ class XvirtPluginServer:
             assert isinstance(evt_rep, EvtRuntestLogreport)
             rep = config.hook.pytest_report_from_serializable(config=config, data=evt_rep.data)
             # config.hook.pytest_runtest_logreport(report=rep)
-            self._report_buffer.append(rep)
             if rep.outcome == 'failed':
                 self._report_map[rep.nodeid] = rep
             recv_count += 1
