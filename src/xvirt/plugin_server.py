@@ -13,6 +13,8 @@ class XvirtPluginServer:
         self._config = config
         self._xvirt_collect_file_done = False
         self._xvirt_package = xvirt_package
+        self._report_buffer = []
+        self._report_map = {}
 
     @pytest.hookimpl
     def pytest_pycollect_makemodule(self, module_path, path, parent):
@@ -32,8 +34,25 @@ class XvirtPluginServer:
         self._xvirt_collect_file_done = True
 
         self._xvirt_instance.run()
-        evt_handler_fun = _make(file_path, parent)
-        return evt_handler_fun(self._xvirt_instance)
+
+        return self._events_handler(self._xvirt_instance, file_path, parent)
+
+    def pytest_collection_finish(self, session: pytest.Session):
+        pass
+        # for rep in self._report_buffer:
+        #     self._config.hook.pytest_runtest_logreport(report=rep)
+
+    def pytest_runtest_protocol(self,item, nextitem):
+        return
+        rep = self._report_map.pop(item.nodeid, None)
+        self._config.hook.pytest_runtest_logreport(report=rep)
+
+
+    def pytest_runtest_makereport(self,item, call):
+        pass
+        rep = self._report_map.pop(item.nodeid, None)
+        return rep
+        # self._config.hook.pytest_runtest_logreport(report=rep)
 
     def is_xvirt_package(self, path):
         if self._xvirt_package == '':
@@ -41,28 +60,8 @@ class XvirtPluginServer:
         str_path = str(path)
         return str_path.startswith(self._xvirt_package)
 
-
-def _order(source):
-    buffer = {}
-    expected_index = 1
-
-    for item in source:
-        if item is None:
-            yield None
-            continue
-
-        buffer[item.index] = item
-
-        while expected_index in buffer:
-            yield buffer.pop(expected_index)
-            expected_index += 1
-
-
-
-def _make(file_path, parent):
-    config = parent.config
-
-    def events_handler(xvirt_instance: XVirt):
+    def _events_handler(self, xvirt_instance: XVirt, file_path, parent):
+        config = parent.config
 
         def re():
             while True:
@@ -94,10 +93,27 @@ def _make(file_path, parent):
             evt_rep = next(recv_event)
             assert isinstance(evt_rep, EvtRuntestLogreport)
             rep = config.hook.pytest_report_from_serializable(config=config, data=evt_rep.data)
-            config.hook.pytest_runtest_logreport(report=rep)
+            # config.hook.pytest_runtest_logreport(report=rep)
+            self._report_buffer.append(rep)
+            if rep.outcome == 'failed':
+                self._report_map[rep.nodeid] = rep
             recv_count += 1
 
         xvirt_instance.finalize()
         return result
 
-    return events_handler
+
+def _order(source):
+    buffer = {}
+    expected_index = 1
+
+    for item in source:
+        if item is None:
+            yield None
+            continue
+
+        buffer[item.index] = item
+
+        while expected_index in buffer:
+            yield buffer.pop(expected_index)
+            expected_index += 1
