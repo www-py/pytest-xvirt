@@ -1,5 +1,6 @@
 import socket
 import tempfile
+from queue import Queue
 from distutils.dir_util import copy_tree
 from pathlib import Path
 from threading import Thread
@@ -49,14 +50,20 @@ class SocketServer:
         s.listen(0)
         s.settimeout(self.timeout)
         self.socket = s
+        self.events = Queue()
+        Thread(target=self._pipe_events, daemon=True).start()
+
+    def _pipe_events(self):
+        while True:
+            client, _ = self.socket.accept()
+            client.settimeout(self.timeout)
+
+            data = client.recv(1024 * 16)
+            json_str = data.decode('utf-8')
+            self.events.put(json_str)
 
     def recv_event(self) -> str:
-        client, _ = self.socket.accept()
-        client.settimeout(self.timeout)
-
-        data = client.recv(1024 * 16)
-        json_str = data.decode('utf-8')
-        return json_str
+        return self.events.get(timeout=30)
 
 
 # language=python
