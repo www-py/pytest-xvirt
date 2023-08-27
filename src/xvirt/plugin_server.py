@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from xvirt import XVirt
-from xvirt.events import EvtCollectionFinish, EvtRuntestLogreport, Evt, EvtCollectReportFail
+from xvirt.events import EvtCollectionFinish, EvtRuntestLogreport, Evt, EvtCollectReportFail, EvtRemoteFinished
 
 
 class XvirtPluginServer:
@@ -14,6 +14,8 @@ class XvirtPluginServer:
         self._xvirt_collect_file_done = False
         self._xvirt_package = xvirt_package
         self._report_map = {}
+        self._report_nodeid_set = set()
+        self._remote_finished = False
 
     @pytest.hookimpl
     def pytest_pycollect_makemodule(self, module_path, path, parent):
@@ -34,14 +36,18 @@ class XvirtPluginServer:
 
         self._xvirt_instance.run()
 
-        return self._events_handler(self._xvirt_instance, file_path, parent)
+        return self._events_handler(file_path, parent)
 
     def pytest_collection_finish(self, session: pytest.Session):
+
         pass
         # for rep in self._report_buffer:
         #     self._config.hook.pytest_runtest_logreport(report=rep)
 
     def pytest_runtest_makereport(self, item):
+        if item.nodeid not in self._report_nodeid_set:
+            return None
+        self._wait_all_remote()
         return self._report_map.pop(item.nodeid, None)
 
     def is_xvirt_package(self, path):
@@ -50,17 +56,18 @@ class XvirtPluginServer:
         str_path = str(path)
         return str_path.startswith(self._xvirt_package)
 
-    def _events_handler(self, xvirt_instance: XVirt, file_path, parent):
+    def _events_handler(self, file_path, parent):
         config = parent.config
 
         def re():
             while True:
-                event = xvirt_instance.recv_event()
+                event = self._xvirt_instance.recv_event()
                 if event is None:
                     yield None
                 yield Evt.from_json(event)
 
-        recv_event = re()
+        recv_event = _order(re())
+        self._recv_event = recv_event
 
         evt_cf = next(recv_event)
         if evt_cf is None:  # this means that the user did not implement the remote side
@@ -69,27 +76,34 @@ class XvirtPluginServer:
         if isinstance(evt_cf, EvtCollectReportFail):
             rep = config.hook.pytest_report_from_serializable(config=config, data=evt_cf.data)
             config.hook.pytest_collectreport(report=rep)
-            xvirt_instance.finalize()
+            self._xvirt_instance.finalize()
             return None
 
         from xvirt.collectors import VirtCollector
         result = VirtCollector.from_parent(parent, name=file_path.name)
         result.nodeid_array = evt_cf.node_ids
+        self._report_nodeid_set = set(evt_cf.node_ids)
+        # self._wait_all_remote()
+        return result
 
-        # report phase
+    def _wait_all_remote(self):
+        if self._remote_finished:
+            return
+        self._remote_finished = True
 
-        recv_count = 0
-        while recv_count < len(evt_cf.node_ids):
-            evt_rep = next(recv_event)
+        while True:
+            print(f'evt_rep')
+            evt_rep = next(self._recv_event)
+            print(f'evt_rep pos={evt_rep}')
+            if isinstance(evt_rep, EvtRemoteFinished):
+                break
             assert isinstance(evt_rep, EvtRuntestLogreport)
-            rep = config.hook.pytest_report_from_serializable(config=config, data=evt_rep.data)
+            rep = self._config.hook.pytest_report_from_serializable(config=self._config, data=evt_rep.data)
             # config.hook.pytest_runtest_logreport(report=rep)
             if rep.outcome == 'failed':
                 self._report_map[rep.nodeid] = rep
-            recv_count += 1
 
-        xvirt_instance.finalize()
-        return result
+        self._xvirt_instance.finalize()
 
 
 def _order(source):
@@ -100,6 +114,12 @@ def _order(source):
         if item is None:
             yield None
             continue
+
+        if item.index < expected_index:
+            raise Exception(f'index={item.index} < expected_index={expected_index}')
+
+        if item.index in buffer:
+            raise Exception(f'index={item.index} already in buffer')
 
         buffer[item.index] = item
 

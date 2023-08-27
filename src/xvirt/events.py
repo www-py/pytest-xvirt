@@ -49,6 +49,11 @@ class EvtCollectReportFail(Evt):
     data: Dict[str, Any]
 
 
+@dataclass()
+class EvtRemoteFinished(Evt):
+    pass
+
+
 _evt_constructor_dict = {}
 
 
