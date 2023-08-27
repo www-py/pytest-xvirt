@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from xvirt import XVirt
-from xvirt.events import EvtCollectionFinish, EvtRuntestLogreport, Evt
+from xvirt.events import EvtCollectionFinish, EvtRuntestLogreport, Evt, EvtCollectReportFail
 
 
 class XvirtPluginServer:
@@ -56,7 +56,7 @@ def _order_events2(xvirt_instance: XVirt):
             yield None
             return
 
-        if isinstance(evt, EvtCollectionFinish):
+        if isinstance(evt, (EvtCollectionFinish, EvtCollectReportFail)):
             yield evt
             break
         else:
@@ -70,6 +70,8 @@ def _order_events2(xvirt_instance: XVirt):
 
 
 def _make(file_path, parent):
+    config = parent.config
+
     def events_handler(xvirt_instance: XVirt):
 
         recv_event = _order_events2(xvirt_instance)
@@ -77,12 +79,21 @@ def _make(file_path, parent):
         if evt_cf is None:  # this means that the user did not implement the remote side
             return None
 
+        print('=' * 30)
+        print('evt_cf', evt_cf)
+
+        if isinstance(evt_cf, EvtCollectReportFail):
+            rep = config.hook.pytest_report_from_serializable(config=config, data=evt_cf.data)
+            config.hook.pytest_collectreport(report=rep)
+            xvirt_instance.finalize()
+            return None
+
         from xvirt.collectors import VirtCollector
         result = VirtCollector.from_parent(parent, name=file_path.name)
         result.nodeid_array = evt_cf.node_ids
 
         # report phase
-        config = parent.config
+
         recv_count = 0
         while recv_count < len(evt_cf.node_ids):
             evt_rep = next(recv_event)

@@ -41,6 +41,11 @@ class EvtRuntestLogreport(Evt):
     data: Dict[str, Any]
 
 
+@dataclass()
+class EvtCollectReportFail(Evt):
+    data: Dict[str, Any]
+
+
 _evt_constructor_dict = {}
 
 

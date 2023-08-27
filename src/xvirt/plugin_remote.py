@@ -1,5 +1,7 @@
 import pytest
 
+from .events import EvtCollectReportFail, EvtCollectionFinish, EvtRuntestLogreport
+
 
 class XvirtPluginRemote:
 
@@ -10,25 +12,22 @@ class XvirtPluginRemote:
     def pytest_runtest_logreport(self, report):
         if report.when != 'call':
             return
-        config = self._config
-        data = config.hook.pytest_report_to_serializable(config=config, report=report)
-        from .events import EvtRuntestLogreport
-        event = EvtRuntestLogreport(data)
-        config.hook.pytest_xvirt_send_event(event_json=event.to_json(), config=config)
+        self._send(EvtRuntestLogreport(self._pytest_serialize(report)))
 
     @pytest.hookimpl
     def pytest_collection_finish(self, session: pytest.Session):
         # if session.config.option.xvirt_mode == mode_controlled:
-        from .events import EvtCollectionFinish
-        event = EvtCollectionFinish([item.nodeid for item in session.items])
-        session.config.hook.pytest_xvirt_send_event(event_json=event.to_json(), config=session.config)
+        self._send(EvtCollectionFinish([item.nodeid for item in session.items]))
 
     @pytest.hookimpl
     def pytest_collectreport(self, report):
         if report.outcome != 'failed':
             return
-        config = self._config
-        data = config.hook.pytest_report_to_serializable(config=config, report=report)
-        from .events import EvtRuntestLogreport
-        event = EvtRuntestLogreport(data)
-        config.hook.pytest_xvirt_send_event(event_json=event.to_json(), config=config)
+        self._send(EvtCollectReportFail(self._pytest_serialize(report)))
+
+    def _pytest_serialize(self, report):
+        data = self._config.hook.pytest_report_to_serializable(config=self._config, report=report)
+        return data
+
+    def _send(self, event):
+        self._config.hook.pytest_xvirt_send_event(event_json=event.to_json(), config=self._config)
