@@ -13,9 +13,10 @@ def _class_fullname(c):
 @dataclass()
 class Evt:
 
-    def to_json(self) -> str:
+    def to_json(self, index:int) -> str:
         values = dataclasses.asdict(self)
         values['class='] = _class_fullname(self.__class__)
+        values['__index='] = index
         json_string = json.dumps(values)
         return json_string
 
@@ -24,8 +25,10 @@ class Evt:
         def object_hook(d: dict) -> any:
             class_fullname = d.pop('class=', '')
             if class_fullname == '': return d
+            index = d.pop('__index=', '-1')
             constructor = _evt_constructor(class_fullname)
             instance = constructor(**d)
+            instance.index = index
             return instance
 
         return json.loads(json_string, object_hook=object_hook)

@@ -7,6 +7,7 @@ class XvirtPluginRemote:
 
     def __init__(self, config) -> None:
         self._config = config
+        self._counter = 0
 
     @pytest.hookimpl
     def pytest_runtest_logreport(self, report):
@@ -30,4 +31,5 @@ class XvirtPluginRemote:
         return data
 
     def _send(self, event):
-        self._config.hook.pytest_xvirt_send_event(event_json=event.to_json(), config=self._config)
+        self._counter += 1
+        self._config.hook.pytest_xvirt_send_event(event_json=event.to_json(self._counter), config=self._config)

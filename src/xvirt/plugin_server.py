@@ -42,31 +42,31 @@ class XvirtPluginServer:
         return str_path.startswith(self._xvirt_package)
 
 
+def _order(source):
+    buffer = {}
+    expected_index = 1
+
+    for item in source:
+        if item is None:
+            yield None
+            continue
+
+        buffer[item.index] = item
+
+        while expected_index in buffer:
+            yield buffer.pop(expected_index)
+            expected_index += 1
+
+
 def _order_events2(xvirt_instance: XVirt):
     def re():
-        event = xvirt_instance.recv_event()
-        if event is None:
-            return None
-        return Evt.from_json(event)
+        while True:
+            event = xvirt_instance.recv_event()
+            if event is None:
+                yield None
+            yield Evt.from_json(event)
 
-    events = []
-    while True:
-        evt = re()
-        if evt is None:
-            yield None
-            return
-
-        if isinstance(evt, (EvtCollectionFinish, EvtCollectReportFail)):
-            yield evt
-            break
-        else:
-            events.append(evt)
-
-    for evt in events:
-        yield evt
-
-    while True:
-        yield re()
+    yield from _order(re())
 
 
 def _make(file_path, parent):
