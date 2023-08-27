@@ -92,9 +92,7 @@ class XvirtPluginServer:
         self._remote_finished = True
 
         while True:
-            print(f'evt_rep')
             evt_rep = next(self._recv_event)
-            print(f'evt_rep pos={evt_rep}')
             if isinstance(evt_rep, EvtRemoteFinished):
                 break
             assert isinstance(evt_rep, EvtRuntestLogreport)
