@@ -58,29 +58,24 @@ def _order(source):
             expected_index += 1
 
 
-def _order_events2(xvirt_instance: XVirt):
-    def re():
-        while True:
-            event = xvirt_instance.recv_event()
-            if event is None:
-                yield None
-            yield Evt.from_json(event)
-
-    yield from _order(re())
-
 
 def _make(file_path, parent):
     config = parent.config
 
     def events_handler(xvirt_instance: XVirt):
 
-        recv_event = _order_events2(xvirt_instance)
+        def re():
+            while True:
+                event = xvirt_instance.recv_event()
+                if event is None:
+                    yield None
+                yield Evt.from_json(event)
+
+        recv_event = re()
+
         evt_cf = next(recv_event)
         if evt_cf is None:  # this means that the user did not implement the remote side
             return None
-
-        print('=' * 30)
-        print('evt_cf', evt_cf)
 
         if isinstance(evt_cf, EvtCollectReportFail):
             rep = config.hook.pytest_report_from_serializable(config=config, data=evt_cf.data)
