@@ -79,11 +79,12 @@ class XvirtPluginServer:
             self._xvirt_instance.finalize()
             return None
 
+        assert isinstance(evt_cf, EvtCollectionFinish)
         from xvirt.collectors import VirtCollector
         result = VirtCollector.from_parent(parent, name=file_path.name)
         result.nodeid_array = evt_cf.node_ids
         self._report_nodeid_set = set(evt_cf.node_ids)
-        # self._wait_all_remote()
+        self._wait_all_remote()
         return result
 
     def _wait_all_remote(self):
@@ -97,7 +98,7 @@ class XvirtPluginServer:
                 break
             assert isinstance(evt_rep, EvtRuntestLogreport)
             rep = self._config.hook.pytest_report_from_serializable(config=self._config, data=evt_rep.data)
-            # config.hook.pytest_runtest_logreport(report=rep)
+            self._config.hook.pytest_runtest_logreport(report=rep)
             if rep.outcome == 'failed':
                 self._report_map[rep.nodeid] = rep
 
@@ -122,5 +123,6 @@ def _order(source):
         buffer[item.index] = item
 
         while expected_index in buffer:
+            print(f'yielding event {expected_index} available: {buffer.keys()}')
             yield buffer.pop(expected_index)
             expected_index += 1
