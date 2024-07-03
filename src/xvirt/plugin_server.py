@@ -18,13 +18,13 @@ class XvirtPluginServer:
         self._remote_finished = False
 
     @pytest.hookimpl
-    def pytest_pycollect_makemodule(self, module_path, path, parent):
+    def pytest_pycollect_makemodule(self, module_path, parent):
         if self.is_xvirt_package(module_path.parent):
             empty = Path(__file__).parent / 'empty'
-            return pytest.Module.from_parent(parent, fspath=empty)
+            return pytest.Module.from_parent(parent, path=empty)
 
     @pytest.hookimpl
-    def pytest_collect_file(self, file_path: Path, path, parent):
+    def pytest_collect_file(self, file_path: Path, parent):
 
         if not self.is_xvirt_package(file_path):
             return None
