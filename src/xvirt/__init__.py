@@ -25,11 +25,11 @@ class XVirt:
         pass
 
     def remote_invocation_params(self, remote_root: str) -> (str, str):
-        idir = self.config.invocation_dir
+        idir = Path(self.config.invocation_dir).as_posix()
         rp = self.config.rootpath
         rr = remote_root
         invocation_dir = path_rewrite(idir, rp, rr)
-        args = [path_rewrite(a, rp, rr) for a in self.config.args]
+        args = [path_rewrite(Path(a).as_posix(), rp, rr) for a in self.config.args]
         return invocation_dir, args
 
 
