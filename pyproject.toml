@@ -1,6 +1,6 @@
 [project]
 name = "pytest-xvirt"
-version = "0.3.0.dev1"
+version = "0.3.1"
 description = "A pytest plugin to virtualize test. For example to transparently running them on a remote box."
 readme = "README.rst"
 license = { text = "MIT" }
