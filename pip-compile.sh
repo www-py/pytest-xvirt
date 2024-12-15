@@ -1,2 +1,1 @@
-pip install pip-tools
-pip-compile -o requirements.txt
+uv pip compile pyproject.toml -o requirements.txt
