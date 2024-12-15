@@ -1,3 +1,46 @@
+[project]
+name = "pytest-xvirt"
+version = "0.3.0.dev1"
+description = "A pytest plugin to virtualize test. For example to transparently running them on a remote box."
+readme = "README.rst"
+license = { text = "MIT" }
+authors = [
+    { name = "Simone Giacomelli", email = "simone.giacomelli@gmail.com" },
+    { name = "Fabrizio Lamarca", email = "lamarca.fabrizio@gmail.com" }
+]
+maintainers = [{ name = "Simone Giacomelli", email = "simone.giacomelli@gmail.com" }]
+keywords = ["pytest", "plugin", "virtualize", "test", "remote", "environment", "box"]
+requires-python = ">=3.9"
+dependencies = ["pytest>=7.2.2"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Framework :: Pytest",
+    "Topic :: Software Development :: Testing",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
+]
+
+[project.optional-dependencies]
+dev = [
+    "build==0.6.0.post1",
+    "twine==3.4.2",
+    "wheel==0.37.0"
+]
+pypi = ["twine"]
+
+[project.urls]
+"Homepage" = "https://github.com/www-py/pytest-xvirt"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.entry-points."pytest11"]
+xvirt = "xvirt.plugin"
+
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
